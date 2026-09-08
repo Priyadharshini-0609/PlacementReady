@@ -1,0 +1,95 @@
+{% extends 'placement_app/base.html' %}
+
+{% block title %}Interview Preparation Hub - PlacementReady{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Banner -->
+    <div class="card card-custom p-4 p-md-5 bg-white border-0 shadow-sm mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-info-subtle text-info font-heading fw-bold px-3 py-2 rounded-pill mb-2">Campus Recruitment Prep</span>
+                <h2 class="font-heading fw-bold text-dark mb-2">Interview Preparation Repository</h2>
+                <p class="text-secondary mb-0">Master HR behavioral rounds, Technical concepts, SQL queries, Python, Java, and Aptitude interview questions.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="card card-custom p-3 bg-white border-0 shadow-sm mb-4">
+        <form method="GET" class="row g-3 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search question or concept keyword..." value="{{ request.GET.q }}">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <select name="type" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Filter by Question / Tip Type --</option>
+                    <option value="Attire" {% if selected_type == 'Attire' %}selected{% endif %}>👔 Dress Code & Appearance</option>
+                    <option value="Communication" {% if selected_type == 'Communication' %}selected{% endif %}>🗣️ Communication Skills</option>
+                    <option value="PreInterview" {% if selected_type == 'PreInterview' %}selected{% endif %}>📋 Before the Interview Checklist</option>
+                    <option value="PostInterview" {% if selected_type == 'PostInterview' %}selected{% endif %}>🤝 After the Interview Etiquette</option>
+                    <option value="HR" {% if selected_type == 'HR' %}selected{% endif %}>💼 HR & Behavioral</option>
+                    <option value="Technical" {% if selected_type == 'Technical' %}selected{% endif %}>💻 Technical Concepts</option>
+                    <option value="SQL" {% if selected_type == 'SQL' %}selected{% endif %}>🗄️ SQL & Databases</option>
+                    <option value="Python" {% if selected_type == 'Python' %}selected{% endif %}>🐍 Python Coding</option>
+                    <option value="Java" {% if selected_type == 'Java' %}selected{% endif %}>☕ Java Programming</option>
+                    <option value="Aptitude" {% if selected_type == 'Aptitude' %}selected{% endif %}>🧮 Aptitude & Logic</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <a href="{% url 'interview_prep' %}" class="btn btn-outline-secondary w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Question Accordion List -->
+    <div class="accordion custom-accordion" id="interviewAccordion">
+        {% for q in questions %}
+            <div class="accordion-item card card-custom border mb-3 overflow-hidden">
+                <h2 class="accordion-header" id="heading_{{ q.id }}">
+                    <button class="accordion-button collapsed p-4 fw-bold text-dark bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ q.id }}">
+                        <div class="d-flex flex-wrap align-items-center gap-2 w-100 me-3">
+                            <span class="badge {% if q.question_type == 'Attire' %}bg-success-subtle text-success{% elif q.question_type == 'Communication' %}bg-primary-subtle text-primary{% elif q.question_type == 'PreInterview' %}bg-warning-subtle text-warning{% elif q.question_type == 'PostInterview' %}bg-info-subtle text-info{% elif q.question_type == 'HR' %}bg-secondary-subtle text-dark{% else %}bg-light text-secondary border{% endif %} px-3 py-2 rounded-pill font-heading">
+                                {{ q.get_question_type_display }}
+                            </span>
+                            {% if q.company_tag %}
+                                <span class="badge bg-dark text-white px-2.5 py-1.5 rounded-pill font-heading small">
+                                    <i class="bi bi-building me-1"></i>{{ q.company_tag }}
+                                </span>
+                            {% endif %}
+                            <span class="fs-5 font-heading text-dark ms-1">{{ q.question }}</span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse_{{ q.id }}" class="accordion-collapse collapse" data-bs-parent="#interviewAccordion">
+                    <div class="accordion-body p-4 bg-light-subtle border-top">
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-lightbulb-fill text-warning me-2"></i> Model Answer & Response Framework</h6>
+                            <div class="p-3 bg-white rounded-3 border lh-lg text-dark">
+                                {{ q.answer_guide|linebreaksbr }}
+                            </div>
+                        </div>
+
+                        {% if q.tips %}
+                            <div class="alert alert-info border-0 rounded-3 mb-0 d-flex align-items-center gap-2">
+                                <i class="bi bi-star-fill text-info fs-5"></i>
+                                <div><strong>Pro Tip for Students:</strong> {{ q.tips }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="card card-custom p-5 text-center text-muted">
+                <i class="bi bi-chat-left-quote fs-1 opacity-50 d-block mb-2"></i>
+                No interview questions match your filter. Try clearing filters to view all questions.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

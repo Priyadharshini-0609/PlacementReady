@@ -1,0 +1,117 @@
+{% extends 'placement_app/base.html' %}
+
+{% block title %}Manage Questions - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="font-heading fw-bold text-dark mb-0">Question Bank Manager</h3>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Admin Dashboard</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Question Form -->
+        <div class="col-lg-5">
+            <div class="card card-custom p-4 bg-white">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-plus-circle text-primary me-2"></i> Add New Question</h5>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Subject Category</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Question Text</label>
+                        {{ form.question_text }}
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Option A</label>
+                            {{ form.option_a }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Option B</label>
+                            {{ form.option_b }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Option C</label>
+                            {{ form.option_c }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Option D</label>
+                            {{ form.option_d }}
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Correct Option</label>
+                            {{ form.correct_option }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Difficulty</label>
+                            {{ form.difficulty }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Answer Explanation</label>
+                        {{ form.explanation }}
+                    </div>
+
+                    <div class="form-check mb-4">
+                        {{ form.is_diagnostic }}
+                        <label class="form-check-label fw-semibold" for="{{ form.is_diagnostic.id_for_label }}">
+                            Include in Initial Skill Assessment Test
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-pr w-100 py-2 font-heading">
+                        Save Question
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Question List Table -->
+        <div class="col-lg-7">
+            <div class="card card-custom p-4 bg-white">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-list-check text-success me-2"></i> Question Library ({{ questions.count }})</h5>
+                
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Category</th>
+                                <th>Question</th>
+                                <th>Correct</th>
+                                <th>Diagnostic</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in questions %}
+                                <tr>
+                                    <td><span class="badge bg-primary-subtle text-primary">{{ q.category.name }}</span></td>
+                                    <td class="small fw-semibold text-dark">{{ q.question_text|truncatechars:60 }}</td>
+                                    <td><span class="badge bg-success">{{ q.correct_option }}</span></td>
+                                    <td>
+                                        {% if q.is_diagnostic %}
+                                            <span class="badge bg-warning text-dark">Yes</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark border">No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-center py-4 text-muted">No questions found. Add one above!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

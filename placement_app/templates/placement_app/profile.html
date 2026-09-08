@@ -1,0 +1,143 @@
+{% extends 'placement_app/base.html' %}
+
+{% block title %}Academic Profile - PlacementReady{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+            <div class="card card-custom p-4 p-md-5 bg-white border-0 shadow-lg">
+                <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                    <div class="rounded-circle bg-primary-subtle text-primary p-3 d-flex align-items-center justify-content-center" style="width: 65px; height: 65px;">
+                        <i class="bi bi-person-fill fs-2"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-heading fw-bold mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
+                        <p class="text-muted mb-0">@{{ user.username }} &bull; {{ user.email }}</p>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-dark">Academic Department / Stream</label>
+                            {{ form.department }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Year of Study</label>
+                            {{ form.year_of_study }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Preparation Level</label>
+                            {{ form.current_level }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Grading System</label>
+                            {{ form.grade_type }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Academic Score Value</label>
+                            {{ form.score_value }}
+                            <div class="form-text">CGPA out of 10 or Aggregate Percentage %</div>
+                        </div>
+
+                        <!-- ── Dynamic Target Job Role Dropdown ────────────────── -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Select Target Job Role 🎯</label>
+                            <select id="dynamic-job-role-select" name="target_role_text"
+                                    class="form-select form-select-lg">
+                                <option value="">— First select your Department above —</option>
+                            </select>
+                            <div class="form-text text-primary fw-semibold" id="role-hint">
+                                <i class="bi bi-arrow-up-circle"></i> Select your department to see relevant roles
+                            </div>
+                            <input type="hidden" name="target_role" id="hidden-target-role" value="{{ form.target_role.value|default:'' }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Or Type Custom Job Role</label>
+                            {{ form.custom_target_role }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-dark">Key Technical / Domain Skills</label>
+                            {{ form.skills }}
+                            <div class="form-text">Comma separated (e.g. SQL, Python, Excel, Accounting, Communication)</div>
+                        </div>
+
+                        <div class="col-12 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary-pr py-2.5 px-4 font-heading fw-bold">
+                                Save Profile Changes
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary py-2.5 px-4 ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Department → Job Roles dynamic dropdown -->
+<script>
+const DEPT_JOB_ROLES = {{ dept_job_roles_json|safe }};
+const savedRoleText  = "{{ saved_role_text|escapejs }}";
+
+const deptSelect = document.getElementById('id_department');
+const roleSelect = document.getElementById('dynamic-job-role-select');
+const roleHint   = document.getElementById('role-hint');
+const hiddenRole = document.getElementById('hidden-target-role');
+
+function populateRoles(dept, preselectText) {
+    roleSelect.innerHTML = '';
+    const roles = DEPT_JOB_ROLES[dept] || [];
+
+    if (!roles.length) {
+        roleSelect.innerHTML = '<option value="">— Select Department first —</option>';
+        roleHint.innerHTML   = '<i class="bi bi-arrow-up-circle"></i> Select your department to see relevant roles';
+        roleHint.className   = 'form-text text-primary fw-semibold';
+        return;
+    }
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— Select a Job Role —';
+    roleSelect.appendChild(placeholder);
+
+    roles.forEach(role => {
+        const opt = document.createElement('option');
+        opt.value = role;
+        opt.textContent = role;
+        if (preselectText && preselectText === role) opt.selected = true;
+        roleSelect.appendChild(opt);
+    });
+
+    roleHint.innerHTML = `<i class="bi bi-check-circle text-success"></i> ${roles.length} roles available for <strong>${dept}</strong>`;
+    roleHint.className = 'form-text text-success fw-semibold';
+}
+
+deptSelect.addEventListener('change', function () {
+    populateRoles(this.value, '');
+    hiddenRole.value = '';
+});
+
+roleSelect.addEventListener('change', function () {
+    hiddenRole.value = this.value;
+});
+
+(function init() {
+    const currentDept = deptSelect.value;
+    if (currentDept) {
+        populateRoles(currentDept, savedRoleText);
+        if (savedRoleText) hiddenRole.value = savedRoleText;
+    }
+})();
+</script>
+{% endblock %}
+

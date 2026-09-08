@@ -1,0 +1,84 @@
+{% extends 'placement_app/base.html' %}
+
+{% block title %}Manage Mock Tests - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="font-heading fw-bold text-dark mb-0">Mock Tests Builder</h3>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Admin Dashboard</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Create Mock Test Form -->
+        <div class="col-lg-5">
+            <div class="card card-custom p-4 bg-white">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-file-plus text-warning me-2"></i> Create Mock Test</h5>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Test Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Subject Category</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Target Job Role</label>
+                        {{ form.job_role }}
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Duration (Minutes)</label>
+                            {{ form.duration_minutes }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Pass Percentage (%)</label>
+                            {{ form.pass_percentage }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Select Questions (Hold Ctrl to select multiple)</label>
+                        {{ form.questions }}
+                    </div>
+
+                    <button type="submit" class="btn btn-warning text-dark w-100 py-2 font-heading fw-bold">
+                        Create Mock Test
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tests List -->
+        <div class="col-lg-7">
+            <div class="card card-custom p-4 bg-white">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-journal-code text-info me-2"></i> Active Mock Tests ({{ tests.count }})</h5>
+                
+                <div class="list-group list-group-flush rounded-3 border">
+                    {% for test in tests %}
+                        <div class="list-group-item p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-warning-subtle text-dark fw-bold">{{ test.duration_minutes }} Mins</span>
+                                <span class="badge bg-info-subtle text-info">{{ test.category.name|default:"General" }}</span>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">{{ test.title }}</h6>
+                            <p class="text-secondary small mb-2">{{ test.description }}</p>
+                            <small class="text-muted"><i class="bi bi-question-circle me-1"></i> {{ test.questions.count }} Questions assigned</small>
+                        </div>
+                    {% empty %}
+                        <div class="p-4 text-center text-muted">No mock tests created yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'placement_app/base.html' %}
+
+{% block title %}Test Result - PlacementReady{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card card-custom p-4 p-md-5 bg-white text-center mb-4">
+        {% if result.score_percentage >= result.test.pass_percentage|default:60 %}
+            <div class="rounded-circle bg-success-subtle text-success p-3 d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-check-circle-fill fs-1"></i>
+            </div>
+            <span class="badge bg-success-subtle text-success fw-bold px-3 py-2 rounded-pill font-heading fs-6 mb-2">Passed</span>
+        {% else %}
+            <div class="rounded-circle bg-danger-subtle text-danger p-3 d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-x-circle-fill fs-1"></i>
+            </div>
+            <span class="badge bg-danger-subtle text-danger fw-bold px-3 py-2 rounded-pill font-heading fs-6 mb-2">Needs Improvement</span>
+        {% endif %}
+
+        <h2 class="font-heading fw-bold">{{ result.test.title|default:"Mock Test" }} Performance</h2>
+        <p class="text-secondary">Completed on {{ result.completed_at|date:"F d, Y @ h:i A" }}</p>
+
+        <div class="row justify-content-center my-4">
+            <div class="col-md-4">
+                <div class="p-4 bg-light rounded-4 border">
+                    <span class="text-muted d-block font-heading mb-1">Score Percentage</span>
+                    <h1 class="display-4 font-heading fw-bold {% if result.score_percentage >= 60 %}text-success{% else %}text-danger{% endif %} mb-0">
+                        {{ result.score_percentage }}%
+                    </h1>
+                    <small class="text-muted">{{ result.correct_answers }} of {{ result.total_questions }} correct answers</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-3">
+            <a href="{% url 'mock_tests' %}" class="btn btn-outline-pr py-2 px-4">Try Another Mock Test</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary-pr py-2 px-4">Go to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'placement_app/base.html' %}
+
+{% block title %}Step 3: Academic & Target Role Details - PlacementReady{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Onboarding Progress Tracker Header -->
+    <div class="d-flex justify-content-center align-items-center gap-2 mb-4 flex-wrap text-center">
+        <span class="step-pill bg-success-subtle text-success"><i class="bi bi-check-circle-fill"></i> Step 1: Student Registration</span>
+        <i class="bi bi-chevron-right text-muted"></i>
+        <span class="step-pill bg-success-subtle text-success"><i class="bi bi-check-circle-fill"></i> Step 2: Account Logged In</span>
+        <i class="bi bi-chevron-right text-muted"></i>
+        <span class="step-pill bg-primary text-white shadow-sm"><i class="bi bi-3-circle-fill"></i> Step 3: Academic Details & Target Role</span>
+        <i class="bi bi-chevron-right text-muted"></i>
+        <span class="step-pill bg-light text-muted"><i class="bi bi-4-circle"></i> Step 4: Skill Assessment</span>
+        <i class="bi bi-chevron-right text-muted"></i>
+        <span class="step-pill bg-light text-muted"><i class="bi bi-5-circle"></i> Step 5: Placement Dashboard</span>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card card-custom p-4 p-md-5 bg-white border-0 shadow-lg">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width: 65px; height: 65px;">
+                        <i class="bi bi-card-checklist fs-2"></i>
+                    </div>
+                    <h3 class="font-heading fw-bold text-dark mb-1">Academic & Target Role Profile</h3>
+                    <p class="text-muted small mb-0">Fill in your degree stream, grade score, and target job role to customize your preparation path.</p>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-dark">Select Your Academic Department / Stream</label>
+                            {{ form.department }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Year of Study</label>
+                            {{ form.year_of_study }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Current Skill Level</label>
+                            {{ form.current_level }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Grading Type</label>
+                            {{ form.grade_type }}
+                            <div class="form-text">Choose CGPA or Percentage</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Academic Score Value</label>
+                            {{ form.score_value }}
+                            <div class="form-text" id="scoreValueHelp">Enter your CGPA (e.g. 8.5) or Percentage (e.g. 85.5)</div>
+                        </div>
+
+                        <!-- ── Dynamic Target Job Role Dropdown ────────────────── -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Select Target Job Role 🎯</label>
+                            <select id="dynamic-job-role-select" name="target_role_text"
+                                    class="form-select form-select-lg" required>
+                                <option value="">— First select your Department above —</option>
+                            </select>
+                            <div class="form-text text-primary fw-semibold" id="role-hint">
+                                <i class="bi bi-arrow-up-circle"></i> Select your department to see relevant roles
+                            </div>
+                            <!-- Hidden field keeps the DB FK value if already set -->
+                            <input type="hidden" name="target_role" id="hidden-target-role" value="{{ form.target_role.value|default:'' }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Or Type Custom Job Role</label>
+                            {{ form.custom_target_role }}
+                            <div class="form-text">e.g. Financial Analyst, Software Developer</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-dark">Key Technical / Domain Skills</label>
+                            {{ form.skills }}
+                            <div class="form-text">Comma separated (e.g. SQL, Python, Excel, Accounting, Communication)</div>
+                        </div>
+
+                        <div class="col-12 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary-pr w-100 py-3 text-uppercase font-heading tracking-wider fw-bold">
+                                Save Details & Start Skill Assessment <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Department → Job Roles JSON data (inline, zero latency) -->
+<script>
+const DEPT_JOB_ROLES = {{ dept_job_roles_json|safe }};
+const savedRoleText  = "{{ saved_role_text|escapejs }}";
+
+const deptSelect   = document.getElementById('id_department');
+const roleSelect   = document.getElementById('dynamic-job-role-select');
+const roleHint     = document.getElementById('role-hint');
+const hiddenRole   = document.getElementById('hidden-target-role');
+
+function populateRoles(dept, preselectText) {
+    roleSelect.innerHTML = '';
+
+    const roles = DEPT_JOB_ROLES[dept] || [];
+
+    if (!roles.length) {
+        roleSelect.innerHTML = '<option value="">— Select Department first —</option>';
+        roleHint.innerHTML   = '<i class="bi bi-arrow-up-circle"></i> Select your department to see relevant roles';
+        roleHint.className   = 'form-text text-primary fw-semibold';
+        return;
+    }
+
+    // Blank / placeholder option
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— Select a Job Role —';
+    roleSelect.appendChild(placeholder);
+
+    roles.forEach(role => {
+        const opt = document.createElement('option');
+        opt.value       = role;
+        opt.textContent = role;
+        if (preselectText && preselectText === role) opt.selected = true;
+        roleSelect.appendChild(opt);
+    });
+
+    roleHint.innerHTML = `<i class="bi bi-check-circle text-success"></i> ${roles.length} roles available for <strong>${dept}</strong>`;
+    roleHint.className = 'form-text text-success fw-semibold';
+}
+
+// On department change → repopulate roles
+deptSelect.addEventListener('change', function () {
+    populateRoles(this.value, '');
+    hiddenRole.value = '';
+});
+
+// On role select change → update hidden field (stores text; view resolves to FK)
+roleSelect.addEventListener('change', function () {
+    hiddenRole.value = this.value;
+});
+
+// On page load – populate for current department & preselect saved role
+(function init() {
+    const currentDept = deptSelect.value;
+    if (currentDept) {
+        populateRoles(currentDept, savedRoleText);
+        if (savedRoleText) hiddenRole.value = savedRoleText;
+    }
+})();
+</script>
+{% endblock %}

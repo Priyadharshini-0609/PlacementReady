@@ -1,0 +1,146 @@
+{% extends 'placement_app/base.html' %}
+
+{% block title %}Admin Dashboard - PlacementReady{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Admin Header -->
+    <div class="card card-custom p-4 p-md-5 bg-white mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-danger-subtle text-danger fw-bold px-3 py-2 rounded-pill mb-2">Administrator Panel</span>
+                <h2 class="font-heading fw-bold text-dark mb-1">Placement Management System</h2>
+                <p class="text-secondary mb-0">Manage students, questions, daily topics, mock tests, and monitor overall student readiness.</p>
+            </div>
+            <div>
+                <a href="/django-admin/" class="btn btn-outline-dark fw-bold px-3 py-2" target="_blank">
+                    <i class="bi bi-shield-lock me-1"></i> Django Admin Site
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Quick Metrics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card card-custom p-4 bg-white text-center">
+                <div class="rounded-circle bg-primary-subtle text-primary p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                    <i class="bi bi-people-fill fs-4"></i>
+                </div>
+                <h3 class="font-heading fw-bold mb-0 text-dark">{{ total_students }}</h3>
+                <small class="text-muted">Total Registered Students</small>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-custom p-4 bg-white text-center">
+                <div class="rounded-circle bg-success-subtle text-success p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                    <i class="bi bi-graph-up-arrow fs-4"></i>
+                </div>
+                <h3 class="font-heading fw-bold mb-0 text-dark">{{ avg_readiness }}%</h3>
+                <small class="text-muted">Average Student Readiness</small>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-custom p-4 bg-white text-center">
+                <div class="rounded-circle bg-warning-subtle text-warning p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                    <i class="bi bi-question-circle-fill fs-4"></i>
+                </div>
+                <h3 class="font-heading fw-bold mb-0 text-dark">{{ total_questions }}</h3>
+                <small class="text-muted">Question Bank Size</small>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card card-custom p-4 bg-white text-center">
+                <div class="rounded-circle bg-info-subtle text-info p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                    <i class="bi bi-file-earmark-text-fill fs-4"></i>
+                </div>
+                <h3 class="font-heading fw-bold mb-0 text-dark">{{ total_tests }}</h3>
+                <small class="text-muted">Active Mock Tests</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Quick Navigation & Student Table -->
+    <div class="row g-4 mb-4">
+        <!-- Quick Action Nav Buttons -->
+        <div class="col-md-4">
+            <div class="card card-custom p-4 bg-white h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-gear-fill text-primary me-2"></i> Management Tools</h5>
+                <div class="d-flex flex-column gap-3">
+                    <a href="{% url 'admin_questions' %}" class="btn btn-outline-primary text-start p-3 rounded-4 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-bold"><i class="bi bi-plus-circle me-2"></i> Manage Question Bank</div>
+                            <small class="text-muted">Add/Edit Aptitude, SQL & Coding questions</small>
+                        </div>
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+
+                    <a href="{% url 'admin_topics' %}" class="btn btn-outline-success text-start p-3 rounded-4 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-bold"><i class="bi bi-journal-plus me-2"></i> Manage Topics & Roadmaps</div>
+                            <small class="text-muted">Add Day-by-Day learning modules</small>
+                        </div>
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+
+                    <a href="{% url 'admin_tests' %}" class="btn btn-outline-warning text-dark text-start p-3 rounded-4 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-bold"><i class="bi bi-file-plus me-2"></i> Create Mock Tests</div>
+                            <small class="text-muted">Assemble tests & set timers</small>
+                        </div>
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Readiness Leaderboard Table -->
+        <div class="col-md-8">
+            <div class="card card-custom p-4 bg-white h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-people text-success me-2"></i> Registered Students & Placement Status</h5>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Department</th>
+                                <th>Target Role</th>
+                                <th>CGPA</th>
+                                <th>Streak</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prof in students %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ prof.user.first_name }} {{ prof.user.last_name }}</div>
+                                        <small class="text-muted">@{{ prof.user.username }}</small>
+                                    </td>
+                                    <td>{{ prof.department }} ({{ prof.year_of_study }})</td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill">
+                                            {{ prof.target_role.name|default:"Not Set" }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-dark">{{ prof.cgpa }}</td>
+                                    <td>
+                                        <span class="badge bg-warning-subtle text-dark"><i class="bi bi-fire text-danger"></i> {{ prof.streak_count }}d</span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No students registered yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
